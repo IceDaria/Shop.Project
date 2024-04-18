@@ -1,0 +1,21 @@
+{
+  "name": "api-project",
+  "version": "1.0.0",
+  "description": "API project. Module 34",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "IceDaria",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "@types/uuid": "^9.0.8"
+  },
+  "dependencies": {
+    "@types/express": "^4.17.21",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.4",
+    "uuid": "^9.0.1"
+  }
+}
