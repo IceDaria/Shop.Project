@@ -50,8 +50,6 @@ productsRouter.get('/new-product', async (req: Request, res: Response) => {
     // Рендерим шаблон new-product.ejs и передаем данные о продукте
     res.render("new-product", {
         item: product,
-        similarProducts: [], // Если нужно передать похожие продукты
-        notSimilarProducts: [] // Если нужно передать не похожие продукты
     });
 
     } catch (e) {
