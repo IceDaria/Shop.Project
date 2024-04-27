@@ -42,3 +42,9 @@ export interface ProductAddImagesPayload {
 export interface IUserRequisitesEntity extends IAuthRequisites, RowDataPacket {
     id: number;
 }
+
+export interface ISimilarProductEntity extends RowDataPacket {
+    id: number;
+    first_product: string;
+    second_product: string;
+  }

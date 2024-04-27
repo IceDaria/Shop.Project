@@ -1,5 +1,6 @@
 require('dotenv').config();
-import { Express } from "express";
+import express, { Express } from "express";
+import path from 'path';
 import { Connection } from "mysql2/promise";
 import { initDataBase } from "./Server/services/db";
 import { initServer } from "./Server/services/server";
@@ -22,6 +23,12 @@ function initRouter() {
 
     const shopAdmin = ShopAdmin();
     server.use("/admin", shopAdmin);
+
+    // Путь к статическим файлам React-приложения
+    const reactBuildPath = path.join(__dirname, 'Shop.Client', 'build');
+
+    // Использование Express для обслуживания статических файлов
+    server.use(express.static(reactBuildPath));
 
     server.use("/", (_, res) => {
         res.send("React App");

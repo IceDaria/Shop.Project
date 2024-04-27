@@ -1,4 +1,4 @@
-import express, { Express } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import { productsRouter } from "./controllers/products.controller";
 import layouts from "express-ejs-layouts";
 import bodyParser from "body-parser";
@@ -22,6 +22,11 @@ export default function (): Express {
 
     app.use(layouts);
     app.use(express.static(__dirname + "/public"));
+
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        res.locals.location = req.originalUrl; // Передаем текущий URL как переменную 'location'
+        next();
+    });
 
     app.use(validateSession);
     

@@ -33,15 +33,44 @@
                     <% }); %>
         </div>
         <% } %>
+    
+    <% if (similarProducts && similarProducts.length > 0) { %>
+        <h2>Similar products</h2>
+            <div class="product-list">
+                <% similarProducts.forEach(function(similarProduct) { %>
+                <%- include('product-similar', { item: similarProduct }) %>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p>No similar products found.</p>
+    <% } %>
+
+    <h2>Other products</h2>
+        <div class="product-list">
+            <% otherProducts.forEach(function(product) { %>
+                <div class="product">
+                    <p>
+                        <strong><%= product.title %></strong>
+                        <br>
+                        <span><%= product.price %></span>
+                    </p>
+                    <div class="selection">
+                    <label for="<%= product.id %>">Add to Similar</label>
+                    <input type="checkbox" id="<%= product.id %>" name="similarToAdd" value="<%= product.id %>">
+                </div>
+            </div>
+            <% }); %>
+        </div>
+
 
     <% if (item.comments?.length) { %>
         <h2>Comments</h2>
         <div class="product-edit-comments">
             <% item.comments.forEach(function(comment) { %>
                 <%- include('product-comment', { comment: comment }) %>
-                    <% }); %>
+                <% }); %>
         </div>
-        <% } %>
+    <% } %>
     
     <div class="product-edit-footer">
         <button type="submit">Save changes</button>

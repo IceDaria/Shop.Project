@@ -12,6 +12,9 @@ body {
 
 .header {
     padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid #00B1FFFF;
 }
 
@@ -20,6 +23,11 @@ body {
     height: 100px;
     background: url("../img/logo.png");
     background-size: 100px 100px;
+}
+
+.logout {
+    text-transform: uppercase;
+    text-decoration: none;
 }
 
 .products-list {
@@ -127,6 +135,12 @@ body {
 .product-image .remove-mark {
     margin-bottom: 10px;
     text-align: center;
+}
+
+.product-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
 }
 
 .product-edit-footer {

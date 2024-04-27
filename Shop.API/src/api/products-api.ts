@@ -1,11 +1,12 @@
 import { Request, Response, Router } from "express";
 import { mapCommentsEntity, mapImagesEntity, mapProductsEntity } from "../services/mapping";
 import { ResultSetHeader } from "mysql2";
-import { INSERT_PRODUCT_IMAGES_QUERY, INSERT_PRODUCT_QUERY } from "../services/queries";
+import { DELETE_SIMILAR_PRODUCTS, FIND_SIMILAR_PRODUCTS, INSERT_PRODUCT_IMAGES_QUERY, INSERT_PRODUCT_QUERY } from "../services/queries";
 import { v4 as uuidv4 } from 'uuid';
 import { enhanceProductsComments, enhanceProductsImages, getProductsFilterQuery } from "../helpers";
 import { connection } from "../..";
-import { ICommentEntity, IImageEntity, IProductEntity, IProductSearchFilter, ProductAddImagesPayload, ProductCreatePayload } from "../../types";
+import { ICommentEntity, IImageEntity, IProductEntity, IProductSearchFilter, ISimilarProductEntity, ProductAddImagesPayload, ProductCreatePayload } from "../../types";
+import { body, param, validationResult } from "express-validator"
 
 export const productsRouter = Router();
 
@@ -44,6 +45,7 @@ productsRouter.get('/search', async (
     }
 });
 
+// гет-метод для получения конкретного товара
 productsRouter.get('/:id', async (
     req: Request<{ id: string }>,
     res: Response
@@ -120,10 +122,16 @@ productsRouter.post('/', async (
         if (images) {
             const values = images.map((image) => [uuidv4(), image.url, id, image.main]);
             await connection.query<ResultSetHeader>(INSERT_PRODUCT_IMAGES_QUERY, [values]);
-          }
+        }
 
-        res.status(201);
-        res.send(`Product id:${id} has been added!`);
+        const [data] = await connection.query<IProductEntity[]>(
+            "SELECT * FROM products WHERE product_id = ?",
+            [id]
+          );
+      
+          const product = mapProductsEntity(data)[0];
+
+          res.status(201).send(product);
     } catch (e: any) {
         throwServerError(res, e);
     }
@@ -191,6 +199,7 @@ productsRouter.post('/add-images', async (
     }
 });
 
+// метод для удаления изображения у товара
 productsRouter.post('/remove-images', async (
     req: Request<{ productId: string, imageId?: string }>,
     res: Response
@@ -217,15 +226,24 @@ productsRouter.post('/remove-images', async (
     }
 });
 
-// новый метод для изменения обложки товара
-productsRouter.post('/update-thumbnail/:id', async (
-    req: Request<{ id: string }, {}, { newThumbnailId: string }>,
-    res: Response
+// новый метод для изменения обложки товара, Задание 35.5.2
+productsRouter.post('/update-thumbnail/:id',
+    [
+      param('id').isUUID().withMessage('Product id is not UUID'),
+      body('newThumbnailId').isUUID().withMessage('New thumbnail id is empty or not UUID'),
+    ],
+    async (
+      req: Request<{ id: string }, {}, { newThumbnailId: string }>,
+      res: Response
     ) => {
-    try {
-        console.log("Request to update thumbnail received.");
-        console.log("Product ID:", req.params.id);
-        console.log("New Thumbnail ID:", req.body.newThumbnailId);
+      try {
+        // Проверяем результаты валидации
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          res.status(400);
+          res.json({ errors: errors.array() });
+          return;
+        }
 
         const [currentThumbnailRows] = await connection.query<IImageEntity[]>(
             "SELECT * FROM images WHERE product_id=? AND main=?", [req.params.id, 1]);
@@ -265,6 +283,7 @@ productsRouter.post('/update-thumbnail/:id', async (
     }
 });
 
+// метод для измнения заголовка, описания и цены товара в админке
 productsRouter.patch('/:id', async (
     req: Request<{ id: string }, {}, ProductCreatePayload>,
     res: Response
@@ -300,3 +319,133 @@ productsRouter.patch('/:id', async (
       throwServerError(res, e);
     }
 });
+
+// метод для получения похожих товаров
+productsRouter.get(
+    '/similar/:id',
+    [
+      param('id').isUUID().withMessage('Product id is not UUID')
+    ],
+    async (
+      req: Request<{ id: string }>,
+      res: Response
+    ) => {
+      try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ errors: errors.array() });
+        }
+
+        const productId = req.params.id;
+
+        // Выполнение SQL-запроса для получения списка похожих товаров
+        const [rows] = await connection.query<ISimilarProductEntity[]>(FIND_SIMILAR_PRODUCTS, [productId, productId]);
+
+        // Преобразование массива строк результата в массив объектов с данными о похожих товарах
+        const similarProducts = rows.map((row: ISimilarProductEntity) => ({
+          id: row.product_id,
+          title: row.title,
+          description: row.description,
+          price: row.price
+        }));
+
+        res.json({ similarProducts });
+
+      } catch (error) {
+        console.error("Error:", error);
+        res.status(500).send("Internal Server Error");
+      }
+    }
+);
+
+// метод для добавления связей похожих товаров
+productsRouter.post(
+    '/add-similar',
+    [
+        // Валидация каждой пары товаров на корректность UUID
+        body('pairs.*.product_id').isUUID().withMessage('Product id is not UUID'),
+        body('pairs.*.similar_product_id').isUUID().withMessage('Similar product id is not UUID')
+    ],
+    async (req: Request, res: Response) => {
+        try {
+            // Проверка валидности входных данных
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            // Получение списка пар товаров для добавления
+            const { pairs } = req.body;
+
+            // Проверка наличия списка пар товаров
+            if (!Array.isArray(pairs) || pairs.length === 0) {
+                return res.status(400).json({ message: "Pairs array is empty or malformed" });
+            }
+
+             // Проверка наличия дубликатов перед выполнением запроса на добавление
+           /* for (const pair of pairs) {
+                const [existingPair] = await connection.query(
+                    "SELECT * FROM product_similarity WHERE product_id = ? AND similar_product_id = ?",
+                    [pair.product_id, pair.similar_product_id]
+                );
+            
+                if (existingPair) {
+                    return res.status(400).json({ message: "This pair already exists" });
+                }
+            } НЕ РАБОТАЕТ КОРРЕКТНО ПРИ ВОССТАНОВЛЕНИИ УДАЛЁННОЙ СВЯЗИ, ИСПРАВИТЬБ НЕ УДАЛОСЬ*/ 
+
+            // Подготовка данных для запроса к базе данных
+            const values = pairs.map((pair: { product_id: string, similar_product_id: string }) => [
+                pair.product_id,
+                pair.similar_product_id
+            ]);
+
+            // Выполнение SQL-запроса для добавления пар товаров
+            await connection.query(
+                "INSERT INTO product_similarity (product_id, similar_product_id) VALUES ?",
+                [values]
+            );
+
+            // Отправка успешного ответа
+            res.status(201).json({ message: "Pairs have been added successfully" });
+        } catch (error) {
+            console.error("Error:", error);
+            res.status(500).send("Internal Server Error");
+        }
+    }
+);
+
+// метод для удаления похожих товаров
+productsRouter.post(
+    '/remove-similar',
+    [
+        body('productId').isUUID().withMessage('Product id is not UUID'),
+        body('similarProductId').isUUID().withMessage('Similar product id is not UUID')
+    ],
+    async (req: Request, res: Response) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const { productId, similarProductId } = req.body;
+
+            const similarProductsToRemove = [similarProductId];
+
+            // Выполнение SQL-запроса для удаления связи между товарами
+            const [info] = await connection.query<ResultSetHeader>(DELETE_SIMILAR_PRODUCTS,[productId, similarProductId, similarProductId, productId]);
+
+            // Проверка на количество удаленных записей
+            if (info.affectedRows === 0) {
+                res.status(404).send(`No similar product found for product id ${productId}`);
+                return;
+            }
+
+            res.status(200).send(`Similar product for product id ${productId} has been deleted`);
+        } catch (error) {
+            console.error("Error:", error);
+            res.status(500).send("Internal Server Error");
+        }
+    }
+);

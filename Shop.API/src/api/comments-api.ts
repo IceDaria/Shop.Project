@@ -1,5 +1,4 @@
 import { Request, Response, Router } from 'express';
-import { readFile, writeFile } from "fs/promises";
 import { validateComment } from '../helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { mapCommentsEntity } from '../services/mapping';
@@ -7,6 +6,7 @@ import { ResultSetHeader } from 'mysql2';
 import { connection } from '../..';
 import { CommentCreatePayload, ICommentEntity } from '../../types';
 import { IComment } from '@Shared/types';
+import { param, validationResult } from "express-validator"
 
 export const commentsRouter = Router();
 
@@ -41,25 +41,38 @@ commentsRouter.get("/", async (req: Request, res: Response) => {
 });
 
 // задание 34.5.1 и 34.8.1
-commentsRouter.get(`/:id`, async (req: Request<{ id: string }>, res: Response) => {
-    const { id } = req.params;
+commentsRouter.get('/:id',
+    [
+      param('id').isUUID().withMessage('Comment id is not UUID')
+    ],
 
-    try {
-        const [comments] = await connection.query<ICommentEntity[]>(
-            "SELECT * FROM comments WHERE comment_id = ?",
-            [id]
-        );
-
-        if (comments.length === 0) {
-            res.status(404).send(`Comment with id ${id} is not found`);
-            return;
+    async (req: Request<{ id: string }>, res: Response) => {
+      try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          res.status(400);
+          res.json({ errors: errors.array() });
+          return;
         }
-
-        res.status(200).json(comments[0]);
-    } catch (error) {
-        console.error("Error fetching comment:", error);
-        res.status(500).send("Server error");
-    }
+  
+        const [rows] = await connection.query<ICommentEntity[]>(
+          "SELECT * FROM comments WHERE comment_id = ?",
+          [req.params.id]
+        );
+  
+        if (!rows?.[0]) {
+          res.status(404);
+          res.send(`Comment with id ${req.params.id} is not found`);
+          return;
+        }
+  
+        res.setHeader('Content-Type', 'application/json');
+        res.send(mapCommentsEntity(rows)[0]);
+      } catch (e: any) {
+        console.debug(e.message);
+        res.status(500);
+        res.send("Something went wrong");
+      }
 });
 
 commentsRouter.post('/', async (
