@@ -46,19 +46,16 @@ export async function getProduct(
 
 // добавление продукта из админки
 export async function addProduct(formData: IProductEditData): Promise<IProduct | null> {
-    console.log('Sending formData:', formData);
-
     try {
-        const payload: IProduct = {
-          id: "",
-          title: formData.title,
-          description: formData.description,
-          price: Number(formData.price)
-        }
-    
-        const { data } = await axios.post<IProduct>(`${API_HOST}/products`, payload);
+        const { data } = await axios.post<IProduct>(`${API_HOST}/products`, {
+            title: formData.title,
+            description: formData.description,
+            price: Number(formData.price)
+        });
+
         return data;
-      } catch (e) {
+    } catch (error) {
+        console.error('Error adding product:', error);
         return null;
     }
 }
