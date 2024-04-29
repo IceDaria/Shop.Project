@@ -1,13 +1,166 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import 'normalize.css';
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  position: relative;
+}
+button {
+  cursor: pointer;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  background-color: white;
+  display: flex;
+  padding: 20px 40px;
+}
+
+.logo {
+  display: flex;
+  gap: 15px;
+}
+
+.logo-text {
+  align-self: center;
+}
+
+.main-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.button{
+  padding: 10px 15px;
+}
+
+.products-list {
+  margin-top: 25px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+}
+
+.filter-wrapper {
+  display: flex;
+  justify-content: space-between;
+}
+
+.filter {
+  display: flex;
+  gap: 20px;
+}
+
+.filter-label{
+  font-weight: 700;
+}
+
+.list-product {
+  display: flex;
+  align-items: center;
+  width: 350px;
+  gap: 10px;
+}
+
+.list-product__thumbnail {
+  width: 150px;
+  height: 150px;
+}
+
+.list-product__title{
+  font-size: 25px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.info__title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.product-main {
+  align-items: center;
+  display: flex;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.product__thumbnail {
+  width: 200px;
+  height: 200px;
+}
+
+.product-info__title {
+  font-size: 27px;
+  font-weight: 700;
+}
+
+.product__other-images {
+  display: flex;
+  align-items: center;
+}
+
+.other-images__image{
+  max-width: 100px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+.similar-wrapper{
+  display: flex;
+  gap: 20px;
+}
+.similar__thumbnail{
+  width: 100px;
+}
+
+.comments {
+  margin-bottom: 20px;
+}
+
+.comment {
+  border-bottom: 1px solid #00B1FFFF;
+}
+
+.comment__header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.comment__header-info {
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.comment-form {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-wrapper {
+  width: 100%;
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.form-label {
+  width: 80px;
+}
+
+.form-input{
+  width: 100%;
+}
+
+.form-submit {
+  width: 150px;
+  align-self: flex-end;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
 }

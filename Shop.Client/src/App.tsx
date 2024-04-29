@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import HomePage from './components/main/HomePage';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -13,7 +12,7 @@ const App: React.FC = () => {
               <Routes>
                   <Route path="/" element={ <HomePage/>} />
                   <Route path="/products-list" element={<ProductsListPage />} />
-                  <Route path="/:id" element={<ProductDetailPage />} />
+                  <Route path="/products/:id" element={<ProductDetailPage />} />
               </Routes>
           </div>
       </BrowserRouter>
