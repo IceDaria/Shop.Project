@@ -15,6 +15,14 @@ async function launchApplication() {
     connection = await initDataBase();
 
     initRouter();
+
+    // Статические файлы React-приложения (в режиме разработки)
+    server.use(express.static(path.join(__dirname, './Shop.Client/build')));
+
+    // Обработка корневого пути для React-приложения
+    server.get('/', (_, res) => {
+        res.sendFile(path.join(__dirname, './Shop.Client/build', 'index.html'));
+    });
 }
 
 function initRouter() {
@@ -24,14 +32,8 @@ function initRouter() {
     const shopAdmin = ShopAdmin();
     server.use("/admin", shopAdmin);
 
-    // Путь к статическим файлам React-приложения
-    const reactBuildPath = path.join(__dirname, 'Shop.Client', 'build');
-
-    // Использование Express для обслуживания статических файлов
-    server.use(express.static(reactBuildPath));
-
-    server.use("/", (_, res) => {
-        res.send("React App");
+    server.get('/', (_, res) => {
+        res.sendFile(path.join(__dirname, './Shop.Client/build', 'index.html'));
     });
 }
 
