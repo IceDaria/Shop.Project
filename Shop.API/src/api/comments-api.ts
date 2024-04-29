@@ -182,8 +182,7 @@ commentsRouter.patch('/', async (
     }
 });
 
-
-// задание 34.8.1
+// задание 34.8.1, метод удаление комментария из БД
 commentsRouter.delete(`/:id`, async (req: Request<{ id: string }>, res: Response) => {
     const id = req.params.id;
 

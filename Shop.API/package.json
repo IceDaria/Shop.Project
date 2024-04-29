@@ -1,5 +1,5 @@
 {
-  "name": "api-project",
+  "name": "shop.api",
   "version": "1.0.0",
   "description": "API project. Module 34",
   "main": "index.ts",
@@ -7,6 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "IceDaria",
+  "repository": {
+    "url": "https://github.com/IceDaria/Shop.Project.git"
+  },
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.12.7",
