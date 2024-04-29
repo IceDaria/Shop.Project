@@ -46,6 +46,8 @@ export async function getProduct(
 
 // добавление продукта из админки
 export async function addProduct(formData: IProductEditData): Promise<IProduct | null> {
+    console.log('Starting addProduct function...');
+    
     try {
         const { data } = await axios.post<IProduct>(`${API_HOST}/products`, {
             title: formData.title,
@@ -53,10 +55,13 @@ export async function addProduct(formData: IProductEditData): Promise<IProduct |
             price: Number(formData.price)
         });
 
+        console.log('Received data from API:', data);
         return data;
     } catch (error) {
         console.error('Error adding product:', error);
         return null;
+    } finally {
+        console.log('Finishing addProduct function...');
     }
 }
 

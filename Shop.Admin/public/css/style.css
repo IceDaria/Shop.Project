@@ -25,7 +25,7 @@ body {
     background-size: 100px 100px;
 }
 
-.logout {
+.header-links {
     text-transform: uppercase;
     text-decoration: none;
 }
@@ -109,6 +109,9 @@ body {
 .product-comment .remove-mark {
     margin-top: 20px;
     text-align: right;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .product-edit-images {

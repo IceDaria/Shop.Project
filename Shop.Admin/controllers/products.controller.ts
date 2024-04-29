@@ -62,6 +62,7 @@ productsRouter.post('/add-product', async (
     req: Request<{}, {}, IProductEditData>,
     res: Response
   ) => {
+    console.log('Received POST request to /add-product');
     try {
         // Извлекаем данные из тела запроса (req.body)
         const formData = req.body;
